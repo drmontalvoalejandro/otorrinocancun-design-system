@@ -6,21 +6,23 @@ BASE_URL = "https://graph.facebook.com/v21.0"
 
 
 async def send_dm(recipient_instagram_id: str, message_text: str) -> dict:
-    """Envía un DM a un usuario de Instagram por su IGSID (Instagram-scoped ID)."""
+    """Envía un DM a un usuario de Instagram usando la API de Instagram directa."""
+    import logging
+    logger = logging.getLogger(__name__)
     from config import INSTAGRAM_PAGE_ID
-    # Usar el ID de la página de Instagram como sender
+
+    # Intentar con el endpoint de Instagram directo (v21.0)
     url = f"{BASE_URL}/{INSTAGRAM_PAGE_ID}/messages"
     payload = {
         "recipient": {"id": recipient_instagram_id},
         "message": {"text": message_text},
         "access_token": INSTAGRAM_ACCESS_TOKEN,
+        "messaging_type": "RESPONSE",
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=payload)
         if not response.is_success:
-            # Log detallado del error
-            import logging
-            logging.getLogger(__name__).error(f"Error API: {response.status_code} - {response.text}")
+            logger.error(f"Error API: {response.status_code} - {response.text}")
         response.raise_for_status()
         return response.json()
 
