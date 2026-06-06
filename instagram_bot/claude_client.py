@@ -1,8 +1,15 @@
 import anthropic
 from config import ANTHROPIC_API_KEY, BUSINESS_CONTEXT
 
-
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+# Cierre fijo que se agrega a TODAS las respuestas — no depende de Claude
+FIXED_CLOSING = """
+
+📅 ¿Te gustaría agendar tu consulta de valoración?
+👉 https://na.doct.to/ts13gauy
+🕐 Lun-Vie 10:30am-5pm | Sáb 10:30am-2pm
+💬 WhatsApp: https://wa.me/529981480332"""
 
 
 def generate_dm_response(trigger_comment: str, username: str) -> str:
@@ -11,21 +18,19 @@ def generate_dm_response(trigger_comment: str, username: str) -> str:
 Un usuario llamado @{username} comentó en tu publicación de Instagram: "{trigger_comment}"
 
 Escribe un mensaje directo (DM) para enviarle. El mensaje debe:
-1. Saludar por su nombre de usuario
-2. Agradecer su interés
-3. Responder a su pregunta o curiosidad de forma breve
-4. Invitarle a agendar una consulta de valoración
+1. Saludar brevemente
+2. Responder su pregunta o curiosidad de forma cálida y clara
+3. NO incluyas al final ningún contacto, link ni forma de agendar — eso se agrega automáticamente
 
 Solo responde con el texto del mensaje, sin explicaciones adicionales.
 """
-
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=300,
         system=BUSINESS_CONTEXT,
         messages=[{"role": "user", "content": prompt}],
     )
-    return message.content[0].text
+    return message.content[0].text + FIXED_CLOSING
 
 
 def generate_dm_reply(conversation_history: list[dict], new_message: str) -> str:
@@ -35,10 +40,9 @@ def generate_dm_reply(conversation_history: list[dict], new_message: str) -> str
 Para respuestas de DM:
 - Sé conversacional y natural
 - Si el paciente hace preguntas médicas específicas, invítalo a la consulta en lugar de diagnosticar
-- Si pide agendar, proporciona el contacto directo: enlace de WhatsApp o Instagram
+- NO incluyas al final ningún contacto, link ni forma de agendar — eso se agrega automáticamente
 - Responde preguntas frecuentes comunes sobre rinoplastia ultrasónica
 """
-
     messages = conversation_history + [{"role": "user", "content": new_message}]
 
     response = client.messages.create(
@@ -47,4 +51,4 @@ Para respuestas de DM:
         system=system_prompt,
         messages=messages,
     )
-    return response.content[0].text
+    return response.content[0].text + FIXED_CLOSING
