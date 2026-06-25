@@ -4,7 +4,7 @@ from fastapi.responses import PlainTextResponse
 
 from config import WEBHOOK_VERIFY_TOKEN, COMMENT_TRIGGERS
 from claude_client import generate_dm_response, generate_dm_reply
-from instagram_client import send_dm, get_user_profile
+from instagram_client import send_dm, send_private_reply, get_user_profile
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,8 +59,9 @@ async def handle_comment(comment_data: dict):
     comment_text = comment_data.get("text", "")
     commenter_id = comment_data.get("from", {}).get("id")
     commenter_username = comment_data.get("from", {}).get("username", "amigo")
+    comment_id = comment_data.get("id")  # ID del comentario, necesario para Private Reply
 
-    if not commenter_id or not comment_text:
+    if not comment_id or not comment_text:
         return
 
     logger.info(f"Comentario de @{commenter_username}: {comment_text}")
@@ -77,12 +78,12 @@ async def handle_comment(comment_data: dict):
         username=commenter_username,
     )
 
-    # Enviar DM
+    # Enviar como Private Reply usando el comment_id (ventana de 7 días)
     try:
-        result = await send_dm(recipient_instagram_id=commenter_id, message_text=dm_text)
-        logger.info(f"DM enviado exitosamente: {result}")
+        result = await send_private_reply(comment_id=comment_id, message_text=dm_text)
+        logger.info(f"Private Reply enviado exitosamente: {result}")
     except Exception as e:
-        logger.error(f"Error enviando DM a {commenter_id}: {e}")
+        logger.error(f"Error enviando Private Reply al comentario {comment_id}: {e}")
 
 
 async def handle_dm(messaging: dict):

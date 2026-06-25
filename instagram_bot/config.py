@@ -8,6 +8,8 @@ load_dotenv(Path(__file__).parent / ".env", override=True)
 # Meta / Instagram
 INSTAGRAM_ACCESS_TOKEN = os.getenv("INSTAGRAM_ACCESS_TOKEN")
 INSTAGRAM_PAGE_ID = os.getenv("INSTAGRAM_PAGE_ID")  # Facebook Page ID linked to Instagram
+# Instagram Business Account ID (17841...) — usado para Private Replies a comentarios
+INSTAGRAM_BUSINESS_ID = os.getenv("INSTAGRAM_BUSINESS_ID", "17841453338177935")
 WEBHOOK_VERIFY_TOKEN = os.getenv("WEBHOOK_VERIFY_TOKEN", "otorrinocancun_webhook_2024")
 
 # Anthropic
