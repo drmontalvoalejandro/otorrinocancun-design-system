@@ -4,7 +4,7 @@ from fastapi.responses import PlainTextResponse
 
 from config import WEBHOOK_VERIFY_TOKEN, COMMENT_TRIGGERS
 from claude_client import generate_dm_response, generate_dm_reply
-from instagram_client import send_dm, send_private_reply, get_user_profile
+from instagram_client import send_dm, send_private_reply
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
