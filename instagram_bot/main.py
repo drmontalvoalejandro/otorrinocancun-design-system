@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 
-from config import WEBHOOK_VERIFY_TOKEN, COMMENT_TRIGGERS
+from config import WEBHOOK_VERIFY_TOKEN, COMMENT_TRIGGERS, INSTAGRAM_BUSINESS_ID
 from claude_client import generate_dm_response, generate_dm_reply
 from instagram_client import send_dm, send_private_reply
 
@@ -88,8 +88,17 @@ async def handle_comment(comment_data: dict):
 
 async def handle_dm(messaging: dict):
     """Procesa un DM entrante y responde con Claude."""
+    message_obj = messaging.get("message", {})
     sender_id = messaging["sender"]["id"]
-    message_text = messaging.get("message", {}).get("text", "")
+    message_text = message_obj.get("text", "")
+
+    # Ignorar "echos" (copias de los mensajes que NOSOTROS enviamos)
+    if message_obj.get("is_echo"):
+        return
+
+    # Ignorar mensajes que vienen de nuestra propia cuenta
+    if sender_id == INSTAGRAM_BUSINESS_ID:
+        return
 
     if not message_text:
         return
