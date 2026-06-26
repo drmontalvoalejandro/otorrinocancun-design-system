@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 
 from config import WEBHOOK_VERIFY_TOKEN, COMMENT_TRIGGERS, INSTAGRAM_BUSINESS_ID
-from claude_client import generate_dm_response, generate_dm_reply
+from claude_client import generate_dm_response, generate_dm_reply, PHOTO_ACK
 from instagram_client import send_dm, send_private_reply
 
 logging.basicConfig(level=logging.INFO)
@@ -98,6 +98,18 @@ async def handle_dm(messaging: dict):
 
     # Ignorar mensajes que vienen de nuestra propia cuenta
     if sender_id == INSTAGRAM_BUSINESS_ID:
+        return
+
+    # Si el paciente envía una foto (u otro adjunto), avisar que el Dr. revisará su caso
+    attachments = message_obj.get("attachments", [])
+    has_media = any(a.get("type") in ("image", "video") for a in attachments)
+    if has_media:
+        logger.info(f"Adjunto recibido de {sender_id} — enviando acuse de foto")
+        try:
+            await send_dm(recipient_instagram_id=sender_id, message_text=PHOTO_ACK)
+            logger.info(f"Acuse de foto enviado a {sender_id}")
+        except Exception as e:
+            logger.error(f"Error enviando acuse de foto a {sender_id}: {e}")
         return
 
     if not message_text:

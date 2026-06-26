@@ -11,15 +11,22 @@ FIXED_CLOSING = """
 🕐 Lun-Vie 10:30am-5pm | Sáb 10:30am-2pm
 💬 WhatsApp: https://wa.me/529981480332"""
 
+# Respuesta automática cuando el paciente envía una foto — la revisa el Dr.
+# (NO lleva cierre fijo: el paciente está en el flujo de proyección, no agendando)
+PHOTO_ACK = (
+    "¡Gracias por compartir tu foto! 📸 El Dr. Montalvo revisará tu caso "
+    "personalmente y te responderá en la brevedad posible. 😊"
+)
+
 
 def generate_dm_response(trigger_comment: str, username: str) -> str:
     """Genera una respuesta de DM personalizada basada en el comentario del usuario."""
     prompt = f"""
-Un usuario llamado @{username} comentó en tu publicación de Instagram: "{trigger_comment}"
+Un usuario comentó en tu publicación de Instagram: "{trigger_comment}"
 
-Escribe un mensaje directo (DM) para enviarle. El mensaje debe:
-1. Saludar brevemente
-2. Responder su pregunta o curiosidad de forma cálida y clara
+Escribe un mensaje directo (DM) para enviarle, siguiendo TODAS las reglas de tono y enfoque. El mensaje debe:
+1. Saludar de forma breve y neutra (sin asumir género, sin "Bienvenido" y sin el emoji 👋)
+2. Como el interés es sobre rinoplastia, ofrecer la proyección con foto (una foto de perfil y una de frente, sin compromiso, por este mismo medio) y, si lo prefiere, ayudarle a agendar su consulta de valoración
 3. NO incluyas al final ningún contacto, link ni forma de agendar — eso se agrega automáticamente
 
 Solo responde con el texto del mensaje, sin explicaciones adicionales.
