@@ -15,23 +15,45 @@ WEBHOOK_VERIFY_TOKEN = os.getenv("WEBHOOK_VERIFY_TOKEN", "otorrinocancun_webhook
 # Anthropic
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-# Triggers: palabras que activan el DM automático en comentarios
+# Triggers: palabras que activan el DM automático en comentarios.
+# La coincidencia es por subcadena (ej: "costo" también captura "costos"),
+# así que basta la raíz de cada palabra.
 COMMENT_TRIGGERS = [
+    # Información
     "info",
-    "información",
-    "informacion",
+    "informa",   # información, informacion, informes, informe, informame
+    "interes",   # interesa, me interesa, interesada, interesado, interés
+    "detalles",
+    # Precio / costo
     "precio",
-    "cita",
-    "consulta",
-    "rinoplastia",
-    "nariz",
-    "cirugia",
-    "cirugía",
-    "quanto",
+    "costo",     # costo, costos
+    "cuesta",
     "cuanto",
     "cuánto",
+    "quanto",
+    "valor",
+    "$",
+    # Cita / agenda / consulta
+    "cita",
+    "agenda",    # agenda, agendar
+    "consulta",
+    "valorac",   # valoración, valoracion
+    "disponib",  # disponible, disponibilidad
+    # Procedimiento (solo nariz)
+    "rinopla",   # rinoplastia
+    "rino",
+    "nariz",
+    "septo",     # septoplastia, tabique
+    "tabique",
+    "cirug",     # cirugia, cirugía
+    "opera",     # operacion, operar, operarme, operación
+    # Intención
     "me interesa",
-    "interesa",
+    "quiero",
+    "quisiera",
+    "ayuda",
+    "foto",      # foto, fotos
+    "proyec",    # proyección, proyeccion
     "como",
     "cómo",
 ]
