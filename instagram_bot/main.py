@@ -108,8 +108,9 @@ async def handle_comment(comment_data: dict):
 
     logger.info(f"Trigger detectado! Generando DM para @{commenter_username}")
 
-    # Generar respuesta con Claude
-    dm_text = generate_dm_response(
+    # Generar respuesta con Claude (en hilo aparte para no bloquear el servidor)
+    dm_text = await asyncio.to_thread(
+        generate_dm_response,
         trigger_comment=comment_text,
         username=commenter_username,
     )
@@ -162,8 +163,9 @@ async def handle_dm(messaging: dict):
     # Recuperar o inicializar historial de conversación
     history = dm_conversations.get(sender_id, [])
 
-    # Generar respuesta con Claude
-    reply = generate_dm_reply(
+    # Generar respuesta con Claude (en hilo aparte para no bloquear el servidor)
+    reply = await asyncio.to_thread(
+        generate_dm_reply,
         conversation_history=history,
         new_message=message_text,
     )
