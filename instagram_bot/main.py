@@ -1,4 +1,7 @@
+import asyncio
 import logging
+from collections import OrderedDict
+
 from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 
@@ -14,6 +17,24 @@ app = FastAPI(title="OtorrinoCancun Instagram Bot")
 # Almacén en memoria de conversaciones de DM (en producción usa Redis/DB)
 # { instagram_scoped_id: [{"role": "user"|"assistant", "content": "..."}] }
 dm_conversations: dict[str, list[dict]] = {}
+
+# Deduplicación de eventos: Meta reintenta webhooks si no recibe respuesta
+# rápida (ej. cuando Render está despertando), lo que causa respuestas
+# duplicadas. Recordamos los últimos IDs procesados para ignorar repetidos.
+_processed_events: OrderedDict[str, bool] = OrderedDict()
+_MAX_PROCESSED = 500
+
+
+def is_duplicate(event_id: str) -> bool:
+    """True si este evento ya fue procesado; lo registra si es nuevo."""
+    if not event_id:
+        return False
+    if event_id in _processed_events:
+        return True
+    _processed_events[event_id] = True
+    while len(_processed_events) > _MAX_PROCESSED:
+        _processed_events.popitem(last=False)
+    return False
 
 
 def contains_trigger(text: str) -> bool:
@@ -36,22 +57,32 @@ async def verify_webhook(
 
 @app.post("/webhook")
 async def handle_webhook(request: Request):
-    """Recibe eventos de Instagram: comentarios y mensajes directos."""
+    """Recibe eventos de Instagram: comentarios y mensajes directos.
+
+    Responde 200 a Meta de inmediato y procesa en segundo plano, para que
+    Meta no reintente el evento (los reintentos causaban mensajes duplicados).
+    """
     body = await request.json()
     logger.info(f"Webhook recibido: {body}")
-
-    for entry in body.get("entry", []):
-        # --- Manejo de COMENTARIOS ---
-        for change in entry.get("changes", []):
-            if change.get("field") == "comments":
-                await handle_comment(change["value"])
-
-        # --- Manejo de MENSAJES DIRECTOS ---
-        for messaging in entry.get("messaging", []):
-            if "message" in messaging:
-                await handle_dm(messaging)
-
+    asyncio.create_task(process_webhook(body))
     return {"status": "ok"}
+
+
+async def process_webhook(body: dict):
+    """Procesa los eventos del webhook en segundo plano."""
+    try:
+        for entry in body.get("entry", []):
+            # --- Manejo de COMENTARIOS ---
+            for change in entry.get("changes", []):
+                if change.get("field") == "comments":
+                    await handle_comment(change["value"])
+
+            # --- Manejo de MENSAJES DIRECTOS ---
+            for messaging in entry.get("messaging", []):
+                if "message" in messaging:
+                    await handle_dm(messaging)
+    except Exception as e:
+        logger.error(f"Error procesando webhook: {e}")
 
 
 async def handle_comment(comment_data: dict):
@@ -62,6 +93,11 @@ async def handle_comment(comment_data: dict):
     comment_id = comment_data.get("id")  # ID del comentario, necesario para Private Reply
 
     if not comment_id or not comment_text:
+        return
+
+    # Ignorar reintentos de Meta del mismo comentario
+    if is_duplicate(f"comment:{comment_id}"):
+        logger.info(f"Comentario {comment_id} ya procesado, ignorando duplicado")
         return
 
     logger.info(f"Comentario de @{commenter_username}: {comment_text}")
@@ -98,6 +134,12 @@ async def handle_dm(messaging: dict):
 
     # Ignorar mensajes que vienen de nuestra propia cuenta
     if sender_id == INSTAGRAM_BUSINESS_ID:
+        return
+
+    # Ignorar reintentos de Meta del mismo mensaje
+    message_id = message_obj.get("mid", "")
+    if is_duplicate(f"dm:{message_id}"):
+        logger.info(f"Mensaje {message_id} ya procesado, ignorando duplicado")
         return
 
     # Si el paciente envía una foto (u otro adjunto), avisar que el Dr. revisará su caso

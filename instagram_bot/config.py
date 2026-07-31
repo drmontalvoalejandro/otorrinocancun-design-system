@@ -86,6 +86,11 @@ Para agendar cita:
 - Doctoralia (preferido): https://na.doct.to/ts13gauy
 - WhatsApp alternativo: https://wa.me/529981480332
 
+UBICACIÓN DEL CONSULTORIO:
+- Azuna Medical Center (Plaza Azuna), Av. Sayil S/N, Supermanzana 6, nivel 8, consultorio 804, Cancún, Q.R.
+- Google Maps: https://share.google/WM0jW3ahBUtv1Dp2R
+- Teléfono del consultorio: 998 892 0203
+
 Horarios del consultorio:
 - Lunes a Viernes: 10:30 am a 5:00 pm
 - Sábados: 10:30 am a 2:00 pm
@@ -94,6 +99,9 @@ PREGUNTAS FRECUENTES — responde con base en esto (en tu tono, breve):
 
 1. ¿Cuáles son los horarios?
    → Lunes a Viernes de 10:30 am a 5:00 pm, y Sábados de 10:30 am a 2:00 pm.
+
+1b. ¿Dónde se encuentran? / ¿dónde está el consultorio? / ¿en qué parte de Cancún?
+   → El consultorio está en Azuna Medical Center (Plaza Azuna), Av. Sayil S/N, nivel 8, consultorio 804, en Cancún. Aquí está la ubicación en Google Maps: https://share.google/WM0jW3ahBUtv1Dp2R
 
 2. ¿Cuánto cuesta la consulta / valoración? / ¿la valoración tiene costo?
    → Sí, la consulta de valoración tiene un costo de $1,200 pesos. Si gustas, también puedes enviarme una foto de tu perfil y una de frente y te doy una valoración inicial por aquí, sin compromiso.
